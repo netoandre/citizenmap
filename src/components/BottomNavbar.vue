@@ -8,59 +8,50 @@
           :class="{ active: activeTab === 'explore' }"
           @click="handleTab('explore')"
         >
-          <q-icon name="map" size="22px" />
+          <q-icon name="map" size="21px" />
           <span class="nav-item-label">{{ $t('bottomNav.explore') || 'Explorar' }}</span>
         </button>
 
-        <!-- 2. Reportar / Cadastro -->
-        <button
-          class="nav-item-btn column items-center justify-center"
-          :class="{ active: activeTab === 'report' }"
-          @click="handleTab('report')"
-        >
-          <q-icon name="add_box" size="22px" />
-          <span class="nav-item-label">{{ $t('bottomNav.report') || 'Reportar' }}</span>
-        </button>
-
-        <!-- 3. Elevated Terracotta Center '+' Button -->
-        <div class="center-fab-wrapper">
-          <button
-            class="center-fab-btn shadow-6 column items-center justify-center"
-            @click="handleTab('quick-add')"
-          >
-            <q-icon name="add" size="28px" color="white" />
-          </button>
-        </div>
-
-        <!-- 4. Rotas -->
+        <!-- 2. Rotas -->
         <button
           class="nav-item-btn column items-center justify-center"
           :class="{ active: routingStore.isOpen }"
           @click="handleTab('routes')"
         >
-          <q-icon name="alt_route" size="22px" />
+          <q-icon name="alt_route" size="21px" />
           <span class="nav-item-label">{{ $t('bottomNav.routes') || 'Rotas' }}</span>
           <span v-if="routingStore.hasConflicts" class="nav-badge-dot"></span>
         </button>
 
-        <!-- 5. Painel Analítico -->
+        <!-- 3. Elevated Figma Center '+' Report Button (.mobile-report) -->
+        <div class="center-fab-wrapper">
+          <button
+            class="center-fab-btn column items-center justify-center shadow-4"
+            @click="handleTab('quick-add')"
+            aria-label="Reportar ocorrência"
+          >
+            <q-icon name="add" size="28px" color="white" />
+          </button>
+        </div>
+
+        <!-- 4. Avisos / Painel Analítico -->
         <button
           class="nav-item-btn column items-center justify-center"
           :class="{ active: activeTab === 'analytics' }"
           @click="handleTab('analytics')"
         >
-          <q-icon name="insights" size="22px" />
-          <span class="nav-item-label">{{ $t('bottomNav.analytics') || 'Painel' }}</span>
+          <q-icon name="notifications" size="21px" />
+          <span class="nav-item-label">{{ $t('bottomNav.analytics') || 'Avisos' }}</span>
         </button>
 
-        <!-- 6. Perfil / Login -->
+        <!-- 5. Perfil / Login -->
         <button
           class="nav-item-btn column items-center justify-center"
           :class="{ active: activeTab === 'profile' }"
           @click="handleTab('profile')"
         >
-          <q-icon :name="authStore.isAuthenticated ? 'account_circle' : 'login'" size="22px" />
-          <span class="nav-item-label">{{ authStore.isAuthenticated ? (authStore.userName.split(' ')[0] || 'Perfil') : 'Entrar' }}</span>
+          <q-icon :name="authStore.isAuthenticated ? 'account_circle' : 'person'" size="21px" />
+          <span class="nav-item-label">{{ authStore.isAuthenticated ? (authStore.userName.split(' ')[0] || 'Perfil') : 'Perfil' }}</span>
         </button>
       </div>
     </div>
@@ -83,7 +74,7 @@ function handleTab(tab) {
   if (tab === 'explore') {
     routingStore.isOpen = false
     emit('reset-view')
-  } else if (tab === 'report' || tab === 'quick-add') {
+  } else if (tab === 'quick-add') {
     emit('open-report')
   } else if (tab === 'routes') {
     emit('toggle-routes')
@@ -96,6 +87,7 @@ function handleTab(tab) {
 </script>
 
 <style scoped>
+/* Figma Mobile Bottom Navigation (.mobile-bottom-nav) */
 .bottom-nav-wrapper {
   position: absolute;
   bottom: 0;
@@ -112,41 +104,46 @@ function handleTab(tab) {
   pointer-events: auto;
   width: 100%;
   max-width: 100%;
-  background: #2D5A27; /* Verde Floresta */
-  border-top: 1.5px solid rgba(255, 255, 255, 0.22);
+  background: #fffdf8; /* --surface */
+  border-top: 1px solid #ded9ce; /* --line */
   border-radius: 20px 20px 0 0;
-  min-height: 60px;
+  min-height: 64px;
   position: relative;
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.28);
-  padding: 2px 8px env(safe-area-inset-bottom, 2px) 8px;
+  box-shadow: 0 -4px 20px rgba(30, 45, 34, 0.08);
+  padding: 4px 10px env(safe-area-inset-bottom, 4px) 10px;
 }
 
 .bottom-nav-inner {
-  max-width: 680px;
+  max-width: 480px;
   width: 100%;
   margin: 0 auto;
   height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
 }
 
 .nav-item-btn {
   background: transparent;
   border: none;
-  color: #D5DFCC;
+  color: #798079;
   cursor: pointer;
-  padding: 4px 6px;
+  padding: 4px 2px;
   border-radius: 12px;
-  transition: all 0.2s ease;
+  transition: all 0.17s ease;
   position: relative;
-  min-width: 48px;
-  flex: 1;
+  flex: 1 1 0;
+  max-width: 68px;
+  min-width: 0;
 }
 
 .nav-item-btn:hover {
-  color: #FFFFFF;
+  color: #245c3a;
 }
 
 .nav-item-btn.active {
-  color: #FFFFFF;
+  color: #245c3a; /* --green-800 */
 }
 
 .nav-item-label {
@@ -156,8 +153,13 @@ function handleTab(tab) {
   margin-top: 2px;
   letter-spacing: -0.2px;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  text-align: center;
 }
 
+/* Figma Elevated Center '+' Button (.mobile-report > span) */
 .center-fab-wrapper {
   position: relative;
   width: 54px;
@@ -165,25 +167,25 @@ function handleTab(tab) {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: -22px;
-  flex-shrink: 0;
+  margin-top: -24px;
+  flex: 0 0 54px;
 }
 
 .center-fab-btn {
-  width: 50px;
-  height: 50px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  background: #C05C33; /* Terracota */
-  border: 3.5px solid #2D5A27;
+  background: #245c3a; /* --green-800 */
+  border: 5px solid #fffdf8; /* 5px solid var(--surface) */
   color: white;
   cursor: pointer;
   transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s ease;
-  box-shadow: 0 4px 14px rgba(192, 92, 51, 0.55);
+  box-shadow: 0 6px 14px rgba(27, 75, 46, 0.35);
 }
 
 .center-fab-btn:hover {
-  transform: scale(1.1) translateY(-2px);
-  background: #D4693D;
+  transform: scale(1.08) translateY(-2px);
+  background: #173d29; /* --green-900 */
 }
 
 .center-fab-btn:active {
@@ -193,11 +195,11 @@ function handleTab(tab) {
 .nav-badge-dot {
   position: absolute;
   top: 4px;
-  right: 12px;
-  width: 8px;
-  height: 8px;
+  right: 14px;
+  width: 7.5px;
+  height: 7.5px;
   border-radius: 50%;
-  background: #C05C33;
-  border: 1.5px solid #2D5A27;
+  background: #c65d35;
+  border: 1.5px solid #fffdf8;
 }
 </style>

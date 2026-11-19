@@ -17,9 +17,12 @@ export const useOccurrencesStore = defineStore('occurrences', {
   }),
 
   getters: {
+    occurrences: (state) => state.features || [],
+
     filteredFeatures: (state) => {
+      if (!state.features) return []
       return state.features.filter((f) => {
-        const props = f.properties
+        const props = f.properties || {}
         const matchesType = state.selectedType === 'all' || props.type === state.selectedType
         const matchesNeighborhood =
           state.selectedNeighborhood === 'all' || props.neighborhood === state.selectedNeighborhood
@@ -27,12 +30,16 @@ export const useOccurrencesStore = defineStore('occurrences', {
           state.selectedStatus === 'all' || props.status === state.selectedStatus
         const matchesSearch =
           !state.searchQuery ||
-          props.title.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
+          (props.title && props.title.toLowerCase().includes(state.searchQuery.toLowerCase())) ||
           (props.description && props.description.toLowerCase().includes(state.searchQuery.toLowerCase())) ||
           (props.address && props.address.toLowerCase().includes(state.searchQuery.toLowerCase()))
 
         return matchesType && matchesNeighborhood && matchesStatus && matchesSearch
       })
+    },
+
+    filteredOccurrences() {
+      return this.filteredFeatures || []
     },
 
     typeCounts: (state) => {
@@ -43,10 +50,12 @@ export const useOccurrencesStore = defineStore('occurrences', {
         flood_prone: 0,
         street_lighting: 0,
       }
-      state.features.forEach((f) => {
-        const t = f.properties.type
-        if (counts[t] !== undefined) counts[t]++
-      })
+      if (state.features) {
+        state.features.forEach((f) => {
+          const t = f.properties?.type
+          if (counts[t] !== undefined) counts[t]++
+        })
+      }
       return counts
     },
   },

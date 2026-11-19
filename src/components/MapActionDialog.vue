@@ -167,16 +167,24 @@ defineExpose({
 .map-action-card {
   width: 100%;
   max-width: 440px;
-  background: #F7F2EE;
-  border-radius: 28px 28px 20px 20px;
-  padding: 8px 12px 18px 12px;
-  border: 1px solid #D9C5B2;
+  background: rgba(255, 253, 248, 0.98);
+  border-radius: 24px;
+  padding: 8px 14px 18px 14px;
+  border: 1px solid #ded9ce;
+  box-shadow: 0 18px 48px rgba(35, 49, 38, 0.16);
+  font-family: 'Public Sans', sans-serif;
+}
+
+@media (max-width: 600px) {
+  .map-action-card {
+    border-radius: 24px 24px 0 0;
+  }
 }
 
 .drag-handle {
   width: 44px;
   height: 4.5px;
-  background: #D9C5B2;
+  background: #ded9ce;
   border-radius: 4px;
 }
 
@@ -184,42 +192,42 @@ defineExpose({
   font-family: 'Public Sans', sans-serif;
   font-size: 1.25rem;
   font-weight: 800;
-  color: #3B2314;
+  color: #1f2923;
   letter-spacing: -0.3px;
   line-height: 1.2;
 }
 
 .action-dialog-subtitle {
-  color: #665B53;
+  color: #677069;
   margin-top: 4px;
   font-weight: 500;
 }
 
 .action-pill-btn {
   height: 56px;
-  border-radius: 20px;
+  border-radius: 16px;
   padding: 0 16px;
   text-transform: none;
   transition: all 0.2s ease;
 }
 
 .btn-green-outline {
-  border: 2px solid #2D5A27 !important;
-  background: #FFFFFF;
+  border: 2px solid #245c3a !important;
+  background: #ffffff;
 }
 
 .btn-green-outline:hover {
-  background: #EAF0E8;
+  background: #edf3ea;
 }
 
 .btn-terracotta-fill {
-  background: #C05C33 !important;
-  color: #FFFFFF !important;
-  box-shadow: 0 4px 14px rgba(192, 92, 51, 0.35);
+  background: #c65d35 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(198, 93, 53, 0.35);
 }
 
 .btn-terracotta-fill:hover {
-  background: #B04F28 !important;
+  background: #ab4e2a !important;
 }
 
 .pill-icon-circle {
@@ -232,24 +240,24 @@ defineExpose({
 }
 
 .pill-icon-circle.green-outline {
-  background: #EAF0E8;
+  background: #edf3ea;
 }
 
 .pill-icon-circle.white-fill {
-  background: #FFFFFF;
+  background: #ffffff;
 }
 
 .text-terracotta {
-  color: #C05C33 !important;
+  color: #c65d35 !important;
 }
 
 .pill-label {
-  color: #2D5A27;
+  color: #245c3a;
   font-family: 'Public Sans', sans-serif;
 }
 
 .text-white-8 {
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.9);
   font-size: 0.76rem;
 }
 </style>

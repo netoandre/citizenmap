@@ -20,14 +20,25 @@
     </transition>
 
     <!-- Floating Re-center / GPS Action Button -->
-    <div class="map-controls-floating">
+    <div
+      ref="mapControlsRef"
+      class="map-controls-floating"
+      @click.stop
+      @mousedown.stop
+      @mouseup.stop
+      @dblclick.stop
+      @pointerdown.stop
+      @pointerup.stop
+      @touchstart.stop
+      @touchend.stop
+    >
       <q-btn
         round
         color="white"
         text-color="grey-9"
         icon="my_location"
         class="shadow-2 q-mb-sm"
-        @click="goToUserLocation"
+        @click.stop="goToUserLocation"
       >
         <q-tooltip>{{ $t('newOccurrence.useCurrentLocation') }}</q-tooltip>
       </q-btn>
@@ -37,7 +48,7 @@
         text-color="grey-9"
         icon="zoom_in"
         class="shadow-2 q-mb-xs"
-        @click="zoomIn"
+        @click.stop="zoomIn"
       />
       <q-btn
         round
@@ -45,7 +56,7 @@
         text-color="grey-9"
         icon="zoom_out"
         class="shadow-2"
-        @click="zoomOut"
+        @click.stop="zoomOut"
       />
     </div>
   </div>
@@ -61,6 +72,7 @@ import { useQuasar } from 'quasar'
 const emit = defineEmits(['map-click', 'select-occurrence', 'request-report'])
 
 const mapElement = ref(null)
+const mapControlsRef = ref(null)
 let map = null
 let markersLayerGroup = null
 let buffersLayerGroup = null
@@ -85,6 +97,11 @@ onMounted(() => {
   initMap()
   renderOccurrences()
   autoLocateUser()
+
+  if (mapControlsRef.value) {
+    L.DomEvent.disableClickPropagation(mapControlsRef.value)
+    L.DomEvent.disableScrollPropagation(mapControlsRef.value)
+  }
 })
 
 function initMap() {
@@ -164,12 +181,12 @@ function initMap() {
 // Marker style and colors based on brand identity (from mockup)
 function getTypeColor(type) {
   switch (type) {
-    case 'flood_prone': return '#428CA7' // Azul Alagamento
-    case 'pavement_repair': return '#C05C33' // Terracota Buracos
-    case 'unpaved_street': return '#8C7355' // Terra/Areia
-    case 'waste_dumping': return '#889E58' // Verde Oliva Lixo
-    case 'street_lighting': return '#E5A93C' // Amarelo Quente Iluminação
-    default: return '#2D5A27'
+    case 'flood_prone': return '#287f9d' // Azul Alagamento
+    case 'pavement_repair': return '#c65d35' // Terracota Pavimentação
+    case 'unpaved_street': return '#8c7355' // Terra / Areia
+    case 'waste_dumping': return '#718a35' // Verde Oliva Lixo
+    case 'street_lighting': return '#e7a72f' // Amarelo Quente Iluminação
+    default: return '#245c3a'
   }
 }
 
@@ -317,9 +334,9 @@ function updateRouteOnMap() {
     const latLngs = routingStore.routeCoordinates.map((pt) => [pt[1], pt[0]])
 
     // Route color decision: Green if safe, Amber if moderate, Terracotta if critical
-    let routeColor = '#2D5A27' // Verde Floresta
+    let routeColor = '#245c3a' // Verde Floresta Figma
     if (routingStore.hasConflicts) {
-      routeColor = routingStore.criticalConflicts > 0 ? '#C05C33' : '#E5A93C'
+      routeColor = routingStore.criticalConflicts > 0 ? '#c65d35' : '#e7a72f'
     }
 
     // Outer glow / buffer corridor
@@ -398,7 +415,8 @@ function autoLocateUser() {
   )
 }
 
-function goToUserLocation() {
+function goToUserLocation(e) {
+  if (e && e.stopPropagation) e.stopPropagation()
   if (!navigator.geolocation) {
     $q.notify({ type: 'warning', message: 'Geolocalização não suportada.' })
     return
@@ -418,11 +436,13 @@ function goToUserLocation() {
   )
 }
 
-function zoomIn() {
+function zoomIn(e) {
+  if (e && e.stopPropagation) e.stopPropagation()
   if (map) map.zoomIn()
 }
 
-function zoomOut() {
+function zoomOut(e) {
+  if (e && e.stopPropagation) e.stopPropagation()
   if (map) map.zoomOut()
 }
 
@@ -492,12 +512,12 @@ defineExpose({
   font-size: 19px;
 }
 
-/* Speech bubble popup matching Image 1 */
+/* Speech bubble popup matching Image 1 & Figma */
 .custom-leaflet-popup .leaflet-popup-content-wrapper {
-  background: #FFFFFF;
+  background: #fffdf8;
   border-radius: 14px;
-  box-shadow: 0 4px 20px rgba(59, 35, 20, 0.22);
-  border: 1px solid #D9C5B2;
+  box-shadow: 0 4px 20px rgba(35, 49, 38, 0.16);
+  border: 1px solid #ded9ce;
   padding: 0;
 }
 
@@ -507,8 +527,8 @@ defineExpose({
 }
 
 .custom-leaflet-popup .leaflet-popup-tip {
-  background: #FFFFFF;
-  border: 1px solid #D9C5B2;
+  background: #fffdf8;
+  border: 1px solid #ded9ce;
 }
 
 .marker-speech-bubble {
@@ -520,7 +540,7 @@ defineExpose({
 
 .bubble-title {
   font-weight: 700;
-  color: #3B2314;
+  color: #1f2923;
   font-size: 0.84rem;
   line-height: 1.25;
   margin-bottom: 4px;
@@ -530,13 +550,13 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: #665B53;
+  color: #677069;
   font-size: 0.72rem;
   font-weight: 500;
 }
 
 .bubble-check {
-  color: #76A035;
+  color: #5d985e;
   font-size: 16px;
   margin-left: 4px;
 }
@@ -555,11 +575,11 @@ defineExpose({
 }
 
 .route-point-badge.origin {
-  background: #2D5A27;
+  background: #245c3a;
 }
 
 .route-point-badge.destination {
-  background: #C05C33;
+  background: #c65d35;
 }
 
 /* Floating controls placed cleanly above bottom navbar */

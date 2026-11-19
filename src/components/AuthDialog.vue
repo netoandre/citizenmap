@@ -1,16 +1,16 @@
 <template>
   <q-dialog v-model="isOpen" class="auth-dialog">
-    <q-card class="auth-card shadow-10" style="min-width: 330px; max-width: 420px; width: 100%">
+    <q-card class="auth-card shadow-12" style="min-width: 330px; max-width: 420px; width: 100%">
       <q-card-section class="row items-center justify-between q-pb-none">
         <div class="row items-center no-wrap">
-          <q-avatar size="38px" class="q-mr-sm" style="background-color: #2D5A27; color: white">
+          <q-avatar size="38px" class="q-mr-sm" style="background-color: #245c3a; color: white">
             <q-icon name="account_circle" size="24px" />
           </q-avatar>
-          <div class="text-subtitle1 text-weight-bolder" style="color: #3B2314">
+          <div class="text-subtitle1 text-weight-bolder" style="color: #1f2923">
             {{ tab === 'login' ? $t('auth.titleLogin') : $t('auth.titleRegister') }}
           </div>
         </div>
-        <q-btn flat round dense icon="close" size="sm" style="color: #3B2314" v-close-popup />
+        <q-btn flat round dense icon="close" size="sm" style="color: #677069" v-close-popup />
       </q-card-section>
 
       <!-- Tabs Switch -->
@@ -22,12 +22,12 @@
           indicator-color="primary"
           align="justify"
           narrow-indicator
-          style="color: #8C7355"
+          style="color: #677069"
         >
           <q-tab name="login" :label="$t('app.login')" class="text-weight-bold" />
           <q-tab name="register" :label="$t('app.register')" class="text-weight-bold" />
         </q-tabs>
-        <q-separator style="background-color: #D9C5B2" />
+        <q-separator style="background-color: #ded9ce" />
       </q-card-section>
 
       <q-card-section>
@@ -46,7 +46,7 @@
                 hide-bottom-space
               >
                 <template #prepend>
-                  <q-icon name="mail" size="18px" style="color: #8C7355" />
+                  <q-icon name="mail" size="18px" style="color: #677069" />
                 </template>
               </q-input>
 
@@ -61,7 +61,7 @@
                 hide-bottom-space
               >
                 <template #prepend>
-                  <q-icon name="lock" size="18px" style="color: #8C7355" />
+                  <q-icon name="lock" size="18px" style="color: #677069" />
                 </template>
               </q-input>
 
@@ -71,7 +71,7 @@
                   flat
                   dense
                   size="xs"
-                  style="color: #C05C33; font-weight: 700"
+                  style="color: #c65d35; font-weight: 700"
                   :label="$t('auth.quickDemo')"
                   @click="fillDemoUser"
                 />
@@ -85,7 +85,7 @@
                   type="submit"
                   :loading="authStore.loading"
                   class="full-width text-weight-bold text-white"
-                  style="background-color: #2D5A27 !important"
+                  style="background-color: #245c3a !important; height: 42px; border-radius: 12px"
                 />
               </div>
             </q-form>
@@ -119,7 +119,7 @@
                 hide-bottom-space
               >
                 <template #prepend>
-                  <q-icon name="mail" size="18px" style="color: #8C7355" />
+                  <q-icon name="mail" size="18px" style="color: #677069" />
                 </template>
               </q-input>
 
@@ -134,7 +134,7 @@
                 hide-bottom-space
               >
                 <template #prepend>
-                  <q-icon name="lock" size="18px" style="color: #8C7355" />
+                  <q-icon name="lock" size="18px" style="color: #677069" />
                 </template>
               </q-input>
 
@@ -146,7 +146,7 @@
                   type="submit"
                   :loading="authStore.loading"
                   class="full-width text-weight-bold text-white"
-                  style="background-color: #2D5A27 !important"
+                  style="background-color: #245c3a !important; height: 42px; border-radius: 12px"
                 />
               </div>
             </q-form>
@@ -230,11 +230,12 @@ defineExpose({
 
 <style scoped>
 .auth-card {
-  border-radius: 24px;
-  background-color: #F7F2EE;
-  border: 1px solid #D9C5B2;
+  border-radius: 22px;
+  background-color: rgba(255, 253, 248, 0.98);
+  border: 1px solid rgba(222, 217, 206, 0.9);
   font-family: 'Public Sans', sans-serif;
-  color: #3B2314;
+  color: #1f2923;
+  overflow: hidden;
 }
 
 @media (max-width: 600px) {

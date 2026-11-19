@@ -1,296 +1,318 @@
 <template>
   <div v-if="routingStore.isOpen" class="route-planner-container">
-    <q-card class="route-planner-card shadow-8" flat>
-      <!-- Header -->
-      <div class="row items-center justify-between q-px-md q-py-sm border-bottom">
-        <div class="row items-center no-wrap">
-          <q-avatar size="34px" color="primary" text-color="white" class="q-mr-sm">
-            <q-icon name="alt_route" size="20px" />
-          </q-avatar>
-          <div>
-            <div class="text-subtitle2 text-weight-bold">{{ $t('routing.title') }}</div>
-            <div class="text-caption text-grey-7">{{ $t('routing.subtitle') }}</div>
-          </div>
+    <q-card class="route-planner-card shadow-14" flat>
+      <!-- 1. Header (Matching Figma: PLANEJAMENTO SEGURO / Sua rota / Close button) -->
+      <div class="route-header q-px-md q-pt-md q-pb-sm row items-start justify-between no-wrap">
+        <div>
+          <span class="route-eyebrow">PLANEJAMENTO SEGURO</span>
+          <h2 class="route-title q-ma-none">Sua rota</h2>
         </div>
-        <q-btn flat round dense icon="close" size="sm" @click="routingStore.isOpen = false" />
+        <q-btn
+          flat
+          round
+          dense
+          icon="close"
+          size="sm"
+          class="close-btn"
+          @click="routingStore.isOpen = false"
+        />
       </div>
 
-      <q-card-section class="q-pa-md scroll" style="max-height: 75vh">
-        <!-- Origin & Destination Inputs -->
-        <div class="route-inputs-box q-pa-sm rounded-borders bg-grey-1 q-mb-md">
-          <!-- Origin (A) -->
-          <div class="row items-center no-wrap q-mb-xs">
-            <div class="point-badge origin-badge q-mr-sm">A</div>
-            <div class="col-grow text-caption">
-              <template v-if="routingStore.origin">
-                <span class="text-weight-bold text-grey-9">
-                  {{ routingStore.origin.label || `${routingStore.origin.lat.toFixed(4)}, ${routingStore.origin.lng.toFixed(4)}` }}
-                </span>
-              </template>
-              <template v-else>
-                <span class="text-grey-6 italic">{{ $t('routing.origin') }}</span>
-              </template>
+      <!-- 2. Body Section -->
+      <div class="route-body q-px-md q-pb-md q-gutter-y-sm">
+        <!-- Origin & Destination Inputs with Vertical Dashed Connecting Stem -->
+        <div class="route-inputs-wrapper">
+          <div class="vertical-connecting-stem"></div>
+
+          <!-- Origin Row -->
+          <div class="input-block q-mb-sm">
+            <div class="row items-center no-wrap q-mb-xs">
+              <span class="origin-ring-dot q-mr-xs"></span>
+              <span class="input-label">ORIGEM</span>
             </div>
-            <q-btn
-              flat
-              dense
-              round
-              size="sm"
-              icon="pin_drop"
-              color="primary"
-              :class="{ 'bg-blue-1': routingStore.pickingMode === 'origin' }"
-              @click="routingStore.setPickingMode('origin')"
-            >
-              <q-tooltip>{{ $t('routing.pickOriginOnMap') }}</q-tooltip>
-            </q-btn>
-            <q-btn
-              flat
-              dense
-              round
-              size="sm"
-              icon="my_location"
-              color="grey-8"
-              @click="setOriginCurrentLocation"
-            >
-              <q-tooltip>{{ $t('routing.useCurrentLocation') }}</q-tooltip>
-            </q-btn>
-          </div>
 
-          <q-separator spaced="xs" />
-
-          <!-- Destination (B) -->
-          <div class="row items-center no-wrap">
-            <div class="point-badge dest-badge q-mr-sm">B</div>
-            <div class="col-grow text-caption">
-              <template v-if="routingStore.destination">
-                <span class="text-weight-bold text-grey-9">
-                  {{ routingStore.destination.label || `${routingStore.destination.lat.toFixed(4)}, ${routingStore.destination.lng.toFixed(4)}` }}
-                </span>
-              </template>
-              <template v-else>
-                <span class="text-grey-6 italic">{{ $t('routing.destination') }}</span>
-              </template>
-            </div>
-            <q-btn
-              flat
-              dense
-              round
-              size="sm"
-              icon="pin_drop"
-              color="negative"
-              :class="{ 'bg-red-1': routingStore.pickingMode === 'destination' }"
-              @click="routingStore.setPickingMode('destination')"
-            >
-              <q-tooltip>{{ $t('routing.pickDestOnMap') }}</q-tooltip>
-            </q-btn>
-          </div>
-        </div>
-
-        <!-- Quick Demo Routes Buttons -->
-        <div class="row q-gutter-x-xs q-mb-md">
-          <q-btn
-            outline
-            rounded
-            dense
-            size="sm"
-            color="primary"
-            label="Nazaré ➔ Umarizal"
-            class="text-caption q-px-sm"
-            @click="loadDemoRoute('nazare_umarizal')"
-          />
-          <q-btn
-            outline
-            rounded
-            dense
-            size="sm"
-            color="primary"
-            label="Cidade Velha ➔ Batista Campos"
-            class="text-caption q-px-sm"
-            @click="loadDemoRoute('cidade_velha_batista')"
-          />
-          <q-btn
-            outline
-            rounded
-            dense
-            size="sm"
-            color="primary"
-            label="Marco ➔ Reduto"
-            class="text-caption q-px-sm"
-            @click="loadDemoRoute('marco_reduto')"
-          />
-        </div>
-
-        <!-- Buffer Slider -->
-        <div class="q-mb-md bg-grey-1 q-pa-sm rounded-borders">
-          <div class="row items-center justify-between text-caption text-grey-8 q-mb-xs">
-            <span>Raio de Análise de Risco (Buffer)</span>
-            <span class="text-weight-bold text-primary">{{ routingStore.bufferMeters }}m</span>
-          </div>
-          <q-slider
-            v-model="routingStore.bufferMeters"
-            :min="15"
-            :max="150"
-            :step="5"
-            dense
-            color="primary"
-            @change="routingStore.calculateRoute"
-          />
-        </div>
-
-        <!-- Loading State -->
-        <div v-if="routingStore.loading" class="text-center q-pa-md">
-          <q-spinner-dots color="primary" size="36px" />
-          <div class="text-caption text-grey-7 q-mt-xs">{{ $t('routing.analyzing') }}</div>
-        </div>
-
-        <!-- Route Hazard Analysis Results -->
-        <template v-else-if="routingStore.routeCoordinates.length > 0">
-          <!-- Status Banner -->
-          <div
-            class="analysis-banner q-pa-sm rounded-borders q-mb-md row items-center no-wrap"
-            :class="bannerStatusClass"
-          >
-            <q-avatar size="32px" :color="bannerIconBg" text-color="white" class="q-mr-sm">
-              <q-icon :name="bannerIcon" size="18px" />
-            </q-avatar>
-            <div class="col-grow">
-              <div class="text-weight-bolder text-subtitle2 leading-tight">
-                {{ isPt ? routingStore.recommendation?.title_pt : routingStore.recommendation?.title_en }}
-              </div>
-              <div class="text-caption leading-tight q-mt-xs">
-                {{ isPt ? routingStore.recommendation?.description_pt : routingStore.recommendation?.description_en }}
-              </div>
-            </div>
-          </div>
-
-          <!-- Hazards List if conflicts found -->
-          <div v-if="routingStore.hasConflicts" class="q-mb-md">
-            <div class="text-caption text-weight-bold text-grey-8 q-mb-xs">
-              {{ $t('routing.hazardListTitle') }}
-            </div>
-            <q-list separator dense class="rounded-borders border-grey overflow-hidden bg-white">
-              <q-item
-                v-for="conflict in routingStore.conflicts"
-                :key="conflict.id"
-                clickable
-                v-ripple
-                class="q-py-xs"
-                @click="focusConflict(conflict)"
-              >
-                <q-item-section avatar style="min-width: 32px">
-                  <q-icon
-                    :name="getTypeIcon(conflict.type)"
-                    :color="getTypeColor(conflict.type)"
-                    size="18px"
-                  />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label class="text-weight-bold text-caption">{{ conflict.title }}</q-item-label>
-                  <q-item-label caption class="text-grey-7">
-                    {{ conflict.neighborhood }} • {{ conflict.impact_alert }}
-                  </q-item-label>
-                </q-item-section>
-                <q-item-section side>
-                  <q-badge color="grey-3" text-color="grey-9" class="text-weight-bold">
-                    {{ conflict.distance_meters }}m
-                  </q-badge>
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </div>
-
-          <!-- Decision Action Section -->
-          <div class="decision-box bg-blue-grey-1 q-pa-sm rounded-borders q-mb-sm">
-            <div class="text-caption text-weight-bold text-grey-9 q-mb-xs">
-              {{ $t('routing.decisionTitle') }}
-            </div>
-            <div class="row q-gutter-x-sm">
-              <!-- Proceed Button -->
-              <q-btn
-                unelevated
-                rounded
-                dense
-                size="sm"
-                :color="routingStore.userDecision === 'proceed' ? 'positive' : 'grey-9'"
-                :label="$t('routing.proceedAnyway')"
-                icon="navigation"
-                class="col-grow text-weight-bold q-py-xs"
-                @click="handleDecision('proceed')"
-              />
-              <!-- Modify / Detour Button -->
-              <q-btn
-                flat
-                rounded
-                dense
-                size="sm"
-                color="primary"
-                :label="$t('routing.changeRoute')"
-                icon="edit_road"
-                class="text-weight-bold"
+            <div class="input-field-box row items-center justify-between no-wrap">
+              <div
+                class="col-grow text-body2 input-text-content ellipsis cursor-pointer"
                 @click="routingStore.setPickingMode('origin')"
-              />
+              >
+                <template v-if="routingStore.origin">
+                  <span class="text-weight-bold text-ink">
+                    {{ routingStore.origin.label || `${routingStore.origin.lat.toFixed(4)}, ${routingStore.origin.lng.toFixed(4)}` }}
+                  </span>
+                </template>
+                <template v-else>
+                  <span class="text-muted italic">Clique para marcar a origem no mapa</span>
+                </template>
+              </div>
+
+              <!-- Quick action icon buttons -->
+              <div class="row items-center no-wrap q-gutter-x-xs">
+                <q-btn
+                  flat
+                  round
+                  dense
+                  size="sm"
+                  icon="my_location"
+                  color="primary"
+                  @click.stop="setOriginCurrentLocation"
+                >
+                  <q-tooltip>Usar meu GPS atual</q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat
+                  round
+                  dense
+                  size="sm"
+                  icon="pin_drop"
+                  :color="routingStore.pickingMode === 'origin' ? 'primary' : 'grey-7'"
+                  :class="{ 'active-picking-btn': routingStore.pickingMode === 'origin' }"
+                  @click.stop="routingStore.setPickingMode('origin')"
+                >
+                  <q-tooltip>Marcar ponto no mapa</q-tooltip>
+                </q-btn>
+              </div>
             </div>
-            <div v-if="routingStore.userDecision === 'proceed'" class="text-caption text-positive text-weight-medium q-mt-xs">
-              ✓ Rota aceita. Dirija com atenção aos alertas no mapa.
+          </div>
+
+          <!-- Destination Row -->
+          <div class="input-block">
+            <div class="row items-center no-wrap q-mb-xs">
+              <span class="dest-solid-dot q-mr-xs"></span>
+              <span class="input-label">DESTINO</span>
             </div>
+
+            <div class="input-field-box row items-center justify-between no-wrap">
+              <div
+                class="col-grow text-body2 input-text-content ellipsis cursor-pointer"
+                @click="routingStore.setPickingMode('destination')"
+              >
+                <template v-if="routingStore.destination">
+                  <span class="text-weight-bold text-ink">
+                    {{ routingStore.destination.label || `${routingStore.destination.lat.toFixed(4)}, ${routingStore.destination.lng.toFixed(4)}` }}
+                  </span>
+                </template>
+                <template v-else>
+                  <span class="text-muted italic">Clique para marcar o destino no mapa</span>
+                </template>
+              </div>
+
+              <div class="row items-center no-wrap">
+                <q-btn
+                  flat
+                  round
+                  dense
+                  size="sm"
+                  icon="pin_drop"
+                  :color="routingStore.pickingMode === 'destination' ? 'secondary' : 'grey-7'"
+                  :class="{ 'active-picking-btn': routingStore.pickingMode === 'destination' }"
+                  @click.stop="routingStore.setPickingMode('destination')"
+                >
+                  <q-tooltip>Marcar destino no mapa</q-tooltip>
+                </q-btn>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Picking Mode Notification Pill -->
+        <div v-if="routingStore.pickingMode" class="picking-mode-banner row items-center justify-between q-pa-xs">
+          <div class="row items-center no-wrap">
+            <q-spinner-puff size="16px" color="primary" class="q-mr-xs" />
+            <span class="text-caption text-weight-bold text-primary">
+              Clique em qualquer local no mapa para definir o
+              {{ routingStore.pickingMode === 'origin' ? 'ponto de partida' : 'destino' }}.
+            </span>
+          </div>
+          <q-btn flat round dense icon="close" size="xs" color="grey-7" @click="routingStore.setPickingMode(null)" />
+        </div>
+
+        <!-- Loading Spinner -->
+        <div v-if="routingStore.loading" class="text-center q-pa-sm">
+          <q-spinner-dots color="primary" size="32px" />
+          <div class="text-caption text-muted q-mt-xs">Calculando trajeto seguro e analisando riscos...</div>
+        </div>
+
+        <!-- Route Metrics & Hazards (Matching Figma) -->
+        <template v-else-if="routingStore.routeCoordinates.length > 0">
+          <!-- 3. Metrics Banner: Duration + Distance + 'Rota mais segura' -->
+          <div class="route-metrics-card row items-center justify-between q-pa-sm">
+            <div class="row items-baseline no-wrap">
+              <span class="metric-duration q-mr-xs">{{ estimatedDurationMinutes }} min</span>
+              <span class="metric-distance text-muted">{{ formattedDistanceKm }} km</span>
+            </div>
+            <div class="route-badge-safe row items-center no-wrap">
+              <q-icon name="check" size="16px" class="q-mr-xs text-primary" />
+              <span>Rota mais segura</span>
+            </div>
+          </div>
+
+          <!-- 4. Attention / Hazard Alert Box (Matching Figma Image 1) -->
+          <div
+            v-if="routingStore.hasConflicts"
+            class="hazard-alert-box q-pa-sm row items-start no-wrap"
+          >
+            <div class="hazard-alert-icon-box q-mr-sm flex flex-center">
+              <q-icon name="warning" size="20px" color="amber-9" />
+            </div>
+            <div class="col-grow">
+              <div class="hazard-alert-title">
+                Atenção em {{ routingStore.totalConflicts }} {{ routingStore.totalConflicts === 1 ? 'trecho' : 'trechos' }}
+              </div>
+              <div class="hazard-alert-desc">
+                {{ conflictDescriptionSummary }}
+              </div>
+
+              <!-- Collapsible hazard chips -->
+              <div class="row q-gutter-xs q-mt-xs">
+                <span
+                  v-for="conflict in routingStore.conflicts.slice(0, 3)"
+                  :key="conflict.id"
+                  class="hazard-chip cursor-pointer"
+                  @click="focusConflict(conflict)"
+                >
+                  <q-icon :name="getTypeIcon(conflict.type)" size="12px" class="q-mr-xs" />
+                  <span>{{ conflict.title }} ({{ conflict.distance_meters }}m)</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Safe Route (Zero hazards found) -->
+          <div
+            v-else
+            class="safe-alert-box q-pa-sm row items-center no-wrap"
+          >
+            <div class="safe-alert-icon-box q-mr-sm flex flex-center">
+              <q-icon name="verified_user" size="20px" color="positive" />
+            </div>
+            <div>
+              <div class="safe-alert-title">Nenhum risco no trajeto</div>
+              <div class="safe-alert-desc">Trajeto livre de alagamentos, buracos ou vias escuras registradas.</div>
+            </div>
+          </div>
+
+          <!-- 5. Primary Action Button: [ Iniciar rota > ] -->
+          <q-btn
+            unelevated
+            class="start-route-btn full-width"
+            :class="{ 'btn-route-active': routingStore.userDecision === 'proceed' }"
+            @click="handleStartRoute"
+          >
+            <span>{{ routingStore.userDecision === 'proceed' ? 'Rota em andamento ✓' : 'Iniciar rota' }}</span>
+            <q-icon name="chevron_right" size="18px" class="q-ml-xs" />
+          </q-btn>
+        </template>
+
+        <!-- No route yet prompt -->
+        <template v-else>
+          <div class="prompt-box q-pa-sm text-center">
+            <q-icon name="map" size="24px" color="primary" class="q-mb-xs" />
+            <div class="text-caption text-weight-bold text-ink">Defina o ponto de partida e o destino</div>
+            <div class="text-caption text-muted">Ou experimente um dos trajetos pré-configurados abaixo:</div>
           </div>
         </template>
 
-        <!-- Clear / Action Footer -->
-        <div class="row items-center justify-between q-mt-sm">
-          <q-btn
-            flat
-            dense
-            size="sm"
-            color="negative"
-            icon="delete_sweep"
-            :label="$t('routing.clearRoute')"
-            @click="routingStore.clearRoute"
-          />
+        <!-- Quick Demo Route Pills & Clear -->
+        <div class="q-pt-xs">
+          <div class="row items-center justify-between q-mb-xs">
+            <span class="alternatives-label cursor-pointer" @click="showDemoPills = !showDemoPills">
+              {{ showDemoPills ? 'Ocultar alternativas' : 'Ver rotas sugeridas na cidade' }}
+              <q-icon :name="showDemoPills ? 'expand_less' : 'expand_more'" size="16px" />
+            </span>
+            <button
+              v-if="routingStore.routeCoordinates.length > 0"
+              type="button"
+              class="clear-route-link"
+              @click="routingStore.clearRoute"
+            >
+              Limpar
+            </button>
+          </div>
+
+          <transition name="fade">
+            <div v-if="showDemoPills" class="row q-gutter-xs q-mt-xs">
+              <button
+                class="demo-route-pill"
+                @click="loadDemoRoute('nazare_umarizal')"
+              >
+                Nazaré ➔ Umarizal
+              </button>
+              <button
+                class="demo-route-pill"
+                @click="loadDemoRoute('cidade_velha_batista')"
+              >
+                Cidade Velha ➔ Batista Campos
+              </button>
+              <button
+                class="demo-route-pill"
+                @click="loadDemoRoute('marco_reduto')"
+              >
+                Marco ➔ Reduto
+              </button>
+            </div>
+          </transition>
         </div>
-      </q-card-section>
+      </div>
     </q-card>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoutingStore } from '../stores/routing'
 import { useOccurrencesStore } from '../stores/occurrences'
-import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 
 const routingStore = useRoutingStore()
 const occurrencesStore = useOccurrencesStore()
-const { t, locale } = useI18n()
 const $q = useQuasar()
 
-const isPt = computed(() => locale.value === 'pt')
+const showDemoPills = ref(true)
 
-const bannerStatusClass = computed(() => {
-  if (!routingStore.hasConflicts) return 'bg-positive-soft text-positive-dark'
-  if (routingStore.criticalConflicts > 0) return 'bg-negative-soft text-negative-dark'
-  return 'bg-warning-soft text-warning-dark'
+const formattedDistanceKm = computed(() => {
+  if (!routingStore.routeDistanceMeters) return '0.0'
+  return (routingStore.routeDistanceMeters / 1000).toFixed(1)
 })
 
-const bannerIconBg = computed(() => {
-  if (!routingStore.hasConflicts) return 'positive'
-  if (routingStore.criticalConflicts > 0) return 'negative'
-  return 'warning'
+const estimatedDurationMinutes = computed(() => {
+  if (routingStore.routeDurationSeconds) {
+    return Math.max(1, Math.round(routingStore.routeDurationSeconds / 60))
+  }
+  // Fallback estimate (~25 km/h urban average speed)
+  const km = routingStore.routeDistanceMeters / 1000
+  return Math.max(2, Math.round((km / 25) * 60))
 })
 
-const bannerIcon = computed(() => {
-  if (!routingStore.hasConflicts) return 'verified'
-  if (routingStore.criticalConflicts > 0) return 'warning'
-  return 'info'
+const conflictDescriptionSummary = computed(() => {
+  if (!routingStore.hasConflicts) return ''
+  const types = routingStore.conflicts.map((c) => {
+    switch (c.type) {
+      case 'flood_prone': return 'ponto de alagamento'
+      case 'pavement_repair': return 'buraco na pista'
+      case 'waste_dumping': return 'descarte de lixo'
+      case 'street_lighting': return 'via sem iluminação'
+      default: return 'obstáculo urbano'
+    }
+  })
+  const unique = Array.from(new Set(types))
+  if (unique.length === 1) {
+    return `Esta rota passa próximo a um ${unique[0]}.`
+  }
+  return `Esta rota passa próximo a um ${unique.slice(0, -1).join(', ')} e um ${unique[unique.length - 1]}.`
 })
 
 function setOriginCurrentLocation() {
   if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition((pos) => {
-      routingStore.setOrigin(pos.coords.latitude, pos.coords.longitude, 'Minha Localização')
-      $q.notify({ type: 'info', message: 'Origem definida com seu GPS!' })
-    })
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        routingStore.setOrigin(pos.coords.latitude, pos.coords.longitude, 'Minha Localização')
+        $q.notify({ type: 'info', message: 'Origem definida pelo seu GPS!' })
+      },
+      () => {
+        $q.notify({ type: 'warning', message: 'Não foi possível obter sinal do GPS.' })
+      }
+    )
   }
 }
 
@@ -299,20 +321,21 @@ function loadDemoRoute(type) {
     routingStore.origin = { lat: -1.4528, lng: -48.4812, label: 'Nazaré (Basílica)' }
     routingStore.destination = { lat: -1.4445, lng: -48.4862, label: 'Umarizal (Doca)' }
   } else if (type === 'cidade_velha_batista') {
-    routingStore.origin = { lat: -1.4615, lng: -48.5040, label: 'Cidade Velha (Forte)' }
-    routingStore.destination = { lat: -1.4590, lng: -48.4895, label: 'Praça Batista Campos' }
+    routingStore.origin = { lat: -1.4615, lng: -48.504, label: 'Cidade Velha (Forte)' }
+    routingStore.destination = { lat: -1.459, lng: -48.4895, label: 'Praça Batista Campos' }
   } else {
-    routingStore.origin = { lat: -1.4350, lng: -48.4680, label: 'Marco (Humaitá)' }
+    routingStore.origin = { lat: -1.435, lng: -48.468, label: 'Marco (Humaitá)' }
     routingStore.destination = { lat: -1.4492, lng: -48.4985, label: 'Reduto (Rui Barbosa)' }
   }
   routingStore.calculateRoute()
 }
 
-function handleDecision(decision) {
-  routingStore.setDecision(decision)
+function handleStartRoute() {
+  routingStore.setDecision('proceed')
   $q.notify({
     type: 'positive',
-    message: 'Decisão registrada. O mapa exibe seu corredor de navegação.',
+    icon: 'navigation',
+    message: 'Navegação iniciada! Acompanhe a rota segura traçada no mapa.',
   })
 }
 
@@ -325,23 +348,12 @@ function focusConflict(conflict) {
 
 function getTypeIcon(type) {
   switch (type) {
-    case 'flood_prone': return 'tsunami'
-    case 'pavement_repair': return 'report_problem'
+    case 'flood_prone': return 'waves'
+    case 'pavement_repair': return 'construction'
     case 'unpaved_street': return 'terrain'
-    case 'waste_dumping': return 'delete_sweep'
+    case 'waste_dumping': return 'delete'
     case 'street_lighting': return 'lightbulb'
     default: return 'place'
-  }
-}
-
-function getTypeColor(type) {
-  switch (type) {
-    case 'flood_prone': return 'blue-8'
-    case 'pavement_repair': return 'red-8'
-    case 'unpaved_street': return 'brown-7'
-    case 'waste_dumping': return 'amber-9'
-    case 'street_lighting': return 'purple-8'
-    default: return 'primary'
   }
 }
 </script>
@@ -349,99 +361,285 @@ function getTypeColor(type) {
 <style scoped>
 .route-planner-container {
   position: absolute;
-  top: 140px;
-  left: 14px;
-  width: 360px;
-  max-width: calc(100vw - 28px);
-  z-index: 950;
-}
-
-.route-planner-card {
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.point-badge {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.origin-badge {
-  background: #2D5A27;
-}
-
-.dest-badge {
-  background: #C05C33;
-}
-
-.route-planner-container {
-  position: absolute;
   top: 110px;
-  left: 14px;
-  width: 380px;
-  max-width: calc(100vw - 28px);
+  left: 20px;
+  width: 375px;
+  max-width: calc(100vw - 32px);
   z-index: 950;
+  font-family: 'Public Sans', sans-serif;
 }
 
 @media (max-width: 600px) {
   .route-planner-container {
     top: auto;
-    bottom: 76px;
-    left: 8px;
-    right: 8px;
+    bottom: 74px;
+    left: 10px;
+    right: 10px;
     width: auto;
     max-width: 100vw;
   }
 }
 
 .route-planner-card {
-  border-radius: 24px;
-  background: rgba(247, 242, 238, 0.96); /* Bege Claro */
+  border-radius: 22px;
+  background: rgba(255, 253, 248, 0.99);
   backdrop-filter: blur(14px);
-  border: 1px solid #D9C5B2;
+  border: 1px solid rgba(222, 217, 206, 0.95);
+  color: #1f2923;
+  overflow: hidden;
 }
 
-.border-bottom {
-  border-bottom: 1px solid #D9C5B2;
+.route-header {
+  background: #fffdf8;
 }
 
-.border-grey {
-  border: 1px solid #D9C5B2;
+.route-eyebrow {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #245c3a;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.bg-positive-soft {
-  background: #EAF0E8;
-  border: 1px solid #76A035;
+.route-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1f2923;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
 }
 
-.text-positive-dark {
-  color: #2D5A27;
+.close-btn {
+  color: #677069;
 }
 
-.bg-warning-soft {
-  background: #FEF7EC;
-  border: 1px solid #E5A93C;
+/* Vertical dashed line between origin and destination */
+.route-inputs-wrapper {
+  position: relative;
 }
 
-.text-warning-dark {
-  color: #8C5B14;
+.vertical-connecting-stem {
+  position: absolute;
+  left: 6px;
+  top: 14px;
+  bottom: 14px;
+  width: 2px;
+  border-left: 2px dashed #ded9ce;
 }
 
-.bg-negative-soft {
-  background: #FBEFEA;
-  border: 1px solid #C05C33;
+.input-block {
+  position: relative;
+  z-index: 1;
 }
 
-.text-negative-dark {
-  color: #943A1B;
+.input-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: #677069;
+  letter-spacing: 0.06em;
+}
+
+.origin-ring-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2.5px solid #245c3a;
+  background: #fffdf8;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.dest-solid-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #245c3a;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.input-field-box {
+  background: #ffffff;
+  border: 1.5px solid #ded9ce;
+  border-radius: 12px;
+  padding: 6px 10px;
+  transition: all 0.2s ease;
+}
+
+.input-field-box:hover {
+  border-color: #245c3a;
+}
+
+.input-text-content {
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.active-picking-btn {
+  background-color: #e7efe7;
+}
+
+.picking-mode-banner {
+  background: #edf3ea;
+  border: 1px solid #c8dbc5;
+  border-radius: 10px;
+}
+
+/* Metrics Banner */
+.route-metrics-card {
+  background: #eef5ee;
+  border-radius: 14px;
+  border: 1px solid #d5e5d3;
+}
+
+.metric-duration {
+  font-size: 21px;
+  font-weight: 800;
+  color: #1f2923;
+}
+
+.metric-distance {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.route-badge-safe {
+  color: #245c3a;
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+/* Hazard Alert Box */
+.hazard-alert-box {
+  background: #fef8ed;
+  border: 1px solid #fae8c8;
+  border-radius: 14px;
+}
+
+.hazard-alert-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: #faecd0;
+  flex-shrink: 0;
+}
+
+.hazard-alert-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #1f2923;
+}
+
+.hazard-alert-desc {
+  font-size: 11.5px;
+  color: #677069;
+  line-height: 1.35;
+}
+
+.hazard-chip {
+  background: #ffffff;
+  border: 1px solid #fae8c8;
+  border-radius: 8px;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #8c5b14;
+}
+
+/* Safe Alert Box */
+.safe-alert-box {
+  background: #edf7ec;
+  border: 1px solid #c8dbc5;
+  border-radius: 14px;
+}
+
+.safe-alert-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: #d8ebd6;
+  flex-shrink: 0;
+}
+
+.safe-alert-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #245c3a;
+}
+
+.safe-alert-desc {
+  font-size: 11.5px;
+  color: #4a5c4e;
+}
+
+/* Start Route Primary Button */
+.start-route-btn {
+  height: 48px;
+  border-radius: 14px;
+  background: #245c3a !important;
+  color: #ffffff !important;
+  font-weight: 800;
+  font-size: 14px;
+  box-shadow: 0 4px 14px rgba(36, 92, 58, 0.28);
+  text-transform: none;
+}
+
+.start-route-btn:hover {
+  background: #173d29 !important;
+}
+
+.btn-route-active {
+  background: #173d29 !important;
+}
+
+.prompt-box {
+  background: #f7f4ed;
+  border: 1px dashed #ded9ce;
+  border-radius: 12px;
+}
+
+.alternatives-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #245c3a;
+}
+
+.clear-route-link {
+  background: none;
+  border: none;
+  color: #8c7355;
+  font-weight: 700;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.clear-route-link:hover {
+  color: #c65d35;
+  text-decoration: underline;
+}
+
+.demo-route-pill {
+  border: 1px solid #ded9ce;
+  background: #ffffff;
+  color: #245c3a;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.demo-route-pill:hover {
+  background: #e7efe7;
+  border-color: #245c3a;
+}
+
+.text-ink {
+  color: #1f2923;
+}
+
+.text-muted {
+  color: #677069;
 }
 </style>
